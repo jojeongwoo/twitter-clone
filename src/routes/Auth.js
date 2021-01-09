@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import Firebase from "../firebase"; 
+import React, { useState } from "react";
+import { firebaseInstance } from "../firebase"; 
 
 function Auth() {
 
-  const auth = Firebase.auth();
+  const auth = firebaseInstance.auth();
+  const date = new Date();
 
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
@@ -35,11 +36,20 @@ function Auth() {
       }
       console.log(data);
     } catch (error) {
-      console.log(error.message);
+      setError(error.message);
     }
+    setEmail("");
+    setPassword("");
   };
 
   const toggleAccount = () => setNewAccount((prev) => !prev);
+
+  const googleLogin = async (e) => {
+    let provider;
+    provider = new firebaseInstance.auth.GoogleAuthProvider();
+    const data = await auth.signInWithPopup(provider);
+    console.log(data);
+  };
 
   return (
     <div>
@@ -58,17 +68,18 @@ function Auth() {
           onChange={PasswordHandler} 
           required
         />
-        <input type="submit" value={newAccount ? "Create Account" : "Log In"} />
+        <input type="submit" value={newAccount ? "Create Account" : "Sign In"} />
         {error}
       </form>
 
       <span onClick={toggleAccount}>
-        {newAccount ? "Sing In" : "Create Account"}
+        {newAccount ? "Sign In" : "Create Account"}
       </span>
 
       <div>
-        <button>Continue with Google</button>
+        <button onClick={googleLogin} name="google">Continue with Google</button>
       </div>
+      <div>Copyright &copy; {date.getFullYear()}</div>
     </div>
   )
 };
