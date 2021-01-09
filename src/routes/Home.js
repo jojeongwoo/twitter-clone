@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Twitters from '../components/Twitters';
-import { dbService } from "../firebase";
+import { dbService, firebaseInstance } from "../firebase";
 
 function Home({ userObj }) {
   const [text, setText] = useState("");
   const [twitters, setTwitters] = useState([]);
+  const [img, setImg] = useState();
 
   useEffect(() => {
     dbService.collection("twitter").onSnapshot((snapshot) => {
@@ -29,6 +30,21 @@ function Home({ userObj }) {
     });
     setText("");
   };
+  
+  const onChangeImage = (e) => {
+    e.preventDefault();
+    const files = e.target.files;
+    const theFile = files[0];
+    const reader = new FileReader();
+    reader.onloadend = (finishedEvent) => {
+      const { currentTarget : { result }, 
+      }= finishedEvent;
+      setImg(result);
+    }
+    reader.readAsDataURL(theFile);
+  };
+
+  const onClearImg = () => setImg(null);
 
   return (
     <>
@@ -40,7 +56,14 @@ function Home({ userObj }) {
           placeholder="what is on your mind?"
           maxLength={120}
         />
-        <input type="submit" value="submit"/>
+        <input type="file" accept="image/*" onChange={onChangeImage}/>
+        <input type="submit" value="submit" />
+        {img && (
+          <div>
+            <img src={img} width="50px" height="50px" />
+            <button onClick={onClearImg}>Clear</button>
+          </div>
+        )}
       </form>
 
       <>
