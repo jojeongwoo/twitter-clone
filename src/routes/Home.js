@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Twitters from '../components/Twitters';
-import { dbService, firebaseInstance } from "../firebase";
+import { v4 as uuidv4} from 'uuid';
+import { dbService, firebaseService } from "../firebase";
 
 function Home({ userObj }) {
   const [text, setText] = useState("");
   const [twitters, setTwitters] = useState([]);
-  const [img, setImg] = useState();
+  const [img, setImg] = useState("");
 
   useEffect(() => {
     dbService.collection("twitter").onSnapshot((snapshot) => {
@@ -23,12 +24,21 @@ function Home({ userObj }) {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    await dbService.collection("twitter").add({
+    let urlImg = "";
+    if(img != "") {
+      const fireRef = firebaseService.ref().child(`${userObj.uid}/${uuidv4()}`);
+      const response = await fireRef.putString(img, "data_url");
+      urlImg = await response.ref.getDownloadURL();
+    }
+    const tweetObj = {
       text,
       createAt: Date.now(),
       createPerson: userObj.uid,
-    });
+      urlImg,
+    }
+    await dbService.collection("twitter").add(tweetObj);
     setText("");
+    setImg("");
   };
   
   const onChangeImage = (e) => {
@@ -71,7 +81,8 @@ function Home({ userObj }) {
           <Twitters 
             key={twitter.id} 
             twitterObj={twitter} 
-            isLoggedIn={twitter.createPerson === userObj.uid} 
+            isLoggedIn={twitter.createPerson === userObj.uid}
+            
           />
         ))}
       </>

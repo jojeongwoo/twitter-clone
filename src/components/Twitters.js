@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { dbService } from "../firebase";
+import { dbService, firebaseService } from "../firebase";
 
 function Twitters({ twitterObj, isLoggedIn }) {
 
@@ -10,6 +10,7 @@ function Twitters({ twitterObj, isLoggedIn }) {
     const ok = window.confirm("정말 삭제하시겠습니까?");
     if(ok) {
       await dbService.doc(`twitter/${twitterObj.id}`).delete();
+      await firebaseService.refFromURL(twitterObj.imgUrl).delete();
     }
   };
 
@@ -49,6 +50,9 @@ function Twitters({ twitterObj, isLoggedIn }) {
         :
         <>
             <h4>{twitterObj.text}</h4>
+            {twitterObj.imgUrl && (
+              <img src={twitterObj.imgUrl} width="50px" height="50px" />
+            )}
             {isLoggedIn && (
               <>
                 <button onClick={onDelete}>DELETE</button>
